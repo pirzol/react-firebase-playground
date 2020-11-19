@@ -12,6 +12,7 @@ const LandingPage = () => {
   );
 };
 class LandingPageBase extends React.Component {
+  // for testing purposes
   handleOnClick = (e) => {
     console.log("firebase");
       this.props.firebase
@@ -20,7 +21,7 @@ class LandingPageBase extends React.Component {
   };
 
   render() {
-    return <button onClick={(e) => this.handleOnClick(e)}>landing page</button>;
+    return <button onClick={(e) => this.handleOnClick(e)}>test</button>;
   }
 }
 
