@@ -15,8 +15,12 @@ const config = {
 class Firebase {
   constructor() {
     app.initializeApp(config);
+    this.googleProvider = new app.auth.GoogleAuthProvider();
     this.auth = app.auth();
-    this.db = app.database();
+    this.db = app.database();    
+    this.facebookProvider = new app.auth.FacebookAuthProvider();
+    this.twitterProvider = new app.auth.TwitterAuthProvider();    
+    this.emailAuthProvider = app.auth.EmailAuthProvider();
   }
 
   // *** Auth API ***
@@ -34,6 +38,12 @@ class Firebase {
   doPasswordUpdate = (password) =>
     this.auth.currentUser.updatePassword(password);
 
+  doSignInWithGoogle = () => this.auth.signInWithPopup(this.googleProvider);
+
+  doSignInWithFacebook = () => this.auth.signInWithPopup(this.facebookProvider);
+
+  doSignInWithTwitter = () => this.auth.signInWithPopup(this.twitterProvider);
+
   // *** User API
 
   user = (uid) => this.db.ref(`users/${uid}`);
@@ -43,13 +53,12 @@ class Firebase {
 
   onAuthUserListener = (next, fallback) => {
     this.auth.onAuthStateChanged((authUser) => {
-      
       if (authUser) {
         this.user(authUser.uid)
           .once("value")
-          .then((snapshot) => {            
+          .then((snapshot) => {
             const dbUser = snapshot.val();
-            
+
             if (!dbUser.roles) {
               dbUser.roles = {};
             }
