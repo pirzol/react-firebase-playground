@@ -1,8 +1,13 @@
 import React, { Component } from "react";
+import { compose } from "recompose";
 
 import { PasswordForgetForm } from "../PasswordForget";
 import PasswordChangeForm from "../PasswordChange";
-import { withAuthorization, AuthUserContext } from "../Session";
+import {
+  withAuthorization,
+  AuthUserContext,
+  withEmailVerification,
+} from "../Session";
 import { withFirebase } from "../Firebase";
 
 const AccountPage = () => (
@@ -204,4 +209,7 @@ class DefaultLoginToggle extends Component {
   }
 }
 
-export default withAuthorization(condition)(AccountPage);
+export default compose(
+  withAuthorization(condition),
+  withEmailVerification
+)(AccountPage);

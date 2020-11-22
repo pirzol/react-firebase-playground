@@ -15,12 +15,12 @@ const config = {
 class Firebase {
   constructor() {
     app.initializeApp(config);
+    this.emailAuthProvider = app.auth.EmailAuthProvider();
     this.googleProvider = new app.auth.GoogleAuthProvider();
     this.auth = app.auth();
-    this.db = app.database();    
+    this.db = app.database();
     this.facebookProvider = new app.auth.FacebookAuthProvider();
-    this.twitterProvider = new app.auth.TwitterAuthProvider();    
-    this.emailAuthProvider = app.auth.EmailAuthProvider();
+    this.twitterProvider = new app.auth.TwitterAuthProvider();
   }
 
   // *** Auth API ***
@@ -43,6 +43,11 @@ class Firebase {
   doSignInWithFacebook = () => this.auth.signInWithPopup(this.facebookProvider);
 
   doSignInWithTwitter = () => this.auth.signInWithPopup(this.twitterProvider);
+
+  doSendEmailVerification = () =>
+    this.auth.currentUser.sendEmailVerification({
+      url: process.env.REACT_APP_CONFIRMATION_EMAIL_REDIRECT,
+    });
 
   // *** User API
 
@@ -67,6 +72,8 @@ class Firebase {
             authUser = {
               uid: authUser.uid,
               email: authUser.email,
+              emailVerified: authUser.emailVerified,
+              providerData: authUser.providerData,
               ...dbUser,
             };
 
