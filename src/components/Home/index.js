@@ -22,6 +22,7 @@ class MessagesBase extends Component {
     loading: false,
     messages: [],
     text: "",
+    limit: 5,
   };
 
   onRemoveMessage = (uid) => {
@@ -54,23 +55,38 @@ class MessagesBase extends Component {
     });
   };
 
-  componentDidMount() {
+  onNextPage = () => {
+    this.setState(
+      (state) => ({ limit: this.state.limit + 5 }),
+      this.onListenForMessages
+    );
+  };
+
+  onListenForMessages() {
+    console.log("listen", this.state.limit);
     this.setState({ loading: true });
 
-    this.props.firebase.messages().on("value", (snapshot) => {
-      const messageObject = snapshot.val();
+    this.props.firebase
+      .messages()
+      .orderByChild("createdAt")
+      .limitToLast(this.state.limit)
+      .on("value", (snapshot) => {
+        const messageObject = snapshot.val();
 
-      if (messageObject) {
-        
-        const messageList = Object.keys(messageObject).map((key) => ({
-          ...messageObject[key],
-          uid: key,
-        }));
-        this.setState({ messages: messageList, loading: false });
-      } else {
-        this.setState({ messages: null, loading: false });
-      }
-    });
+        if (messageObject) {
+          const messageList = Object.keys(messageObject).map((key) => ({
+            ...messageObject[key],
+            uid: key,
+          }));
+          this.setState({ messages: messageList, loading: false });
+        } else {
+          this.setState({ messages: null, loading: false });
+        }
+      });
+  }
+
+  componentDidMount() {
+    this.onListenForMessages();
   }
 
   componentWillUnmount() {
@@ -78,6 +94,7 @@ class MessagesBase extends Component {
   }
 
   render() {
+    console.log("render");
     const { messages, loading, text } = this.state;
 
     return (
@@ -85,8 +102,12 @@ class MessagesBase extends Component {
         {(authUser) => (
           <div>
             {loading && <div>Loading...</div>}
+            {!loading && messages && (
+              <button onClick={this.onNextPage}>More</button>
+            )}
             {messages ? (
               <MessagesList
+                authUser={authUser}
                 messages={messages}
                 onRemoveMessage={this.onRemoveMessage}
                 onEditMessage={this.onEditMessage}
@@ -105,11 +126,17 @@ class MessagesBase extends Component {
   }
 }
 
-const MessagesList = ({ messages, onRemoveMessage, onEditMessage }) => (
+const MessagesList = ({
+  messages,
+  onRemoveMessage,
+  onEditMessage,
+  authUser,
+}) => (
   <ul>
     {messages.map((message) => (
       <MessageItem
         key={message.uid}
+        authUser={authUser}
         message={message}
         onRemoveMessage={onRemoveMessage}
         onEditMessage={onEditMessage}
@@ -141,7 +168,7 @@ class MessageItem extends Component {
   };
 
   render() {
-    const { message, onRemoveMessage } = this.props;
+    const { message, onRemoveMessage, authUser } = this.props;
     const { editMode, editText } = this.state;
 
     return (
@@ -159,22 +186,28 @@ class MessageItem extends Component {
             {message.editedAt && <span>(Edited)</span>}
           </p>
         )}
+        {message.userId === authUser.uid && (
+          <span>
+            {editMode ? (
+              <p>
+                <button onClick={this.onSaveEditText}>Save</button>
+                <button onClick={this.onToggleEditMode}>Reset</button>
+              </p>
+            ) : (
+              <p>
+                <button onClick={this.onToggleEditMode}>Edit</button>
+              </p>
+            )}
 
-        {editMode ? (
-          <p>
-            <button onClick={this.onSaveEditText}>Save</button>
-            <button onClick={this.onToggleEditMode}>Reset</button>
-          </p>
-        ) : (
-          <p>
-            <button onClick={this.onToggleEditMode}>Edit</button>
-          </p>
-        )}
-
-        {!editMode && (
-          <button type="button" onClick={() => onRemoveMessage(message.uid)}>
-            Delete
-          </button>
+            {!editMode && (
+              <button
+                type="button"
+                onClick={() => onRemoveMessage(message.uid)}
+              >
+                Delete
+              </button>
+            )}
+          </span>
         )}
       </li>
     );
