@@ -12,6 +12,22 @@ const config = {
   appId: process.env.REACT_APP_API_ID,
 };
 
+// const env = "staging";
+// const config = {
+//   apiKey: "AIzaSyBmIciocPub2OUL8a2JKYdCjlkKSsryXHI",
+//   databaseURL: "https://bookworm-webapp-dev.firebaseio.com",
+//   projectId: "bookworm-webapp-dev",
+//   appId: "1:959399073643:web:9d3757396976f44e2c9e2e",
+// };
+
+// const env = "production";
+// const config = {
+//   apiKey: "AIzaSyDDOyC3qXe8zWR6pQW4p9DXJDo4nSXy18g",
+//   databaseURL: "https://bookworm-webapp.firebaseio.com",
+//   projectId: "bookworm-webapp",
+//   appId: "1:352954072681:web:1e6d6d5f181556e30aecf8",
+// };
+
 class Firebase {
   constructor() {
     app.initializeApp(config);
@@ -62,6 +78,11 @@ class Firebase {
 
   message = (uid) => this.db.ref(`messages/${uid}`);
   messages = () => this.db.ref("messages");
+
+  // *** TextsIndex API
+
+  text = (uid) => this.db.ref(`texts/${uid}`);
+  texts = () => this.db.ref("texts");
 
   // *** Merge Auth and DB User API
 
